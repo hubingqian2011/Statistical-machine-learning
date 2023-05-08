@@ -63,3 +63,107 @@ print("Time taken for matrix multiplication in Python: {:.6f} seconds".format(en
 ```
 
 Time taken for matrix multiplication in Python: 0.076255 seconds
+
+Both code samples above are performing matrix multiplication on two random matrices with a size of 1000x1000. The Python code uses the numpy library for creating random matrices and performing matrix multiplication, while the Julia code uses built-in functions for the same purpose. Julia generally performs better in tasks like matrix multiplication, but Python has a more extensive ecosystem and community support. Depending on your specific use case and requirements, you may choose one language over the other. However, it's worth noting that the performance difference in matrix multiplication may not be significant when using optimized libraries like NumPy in Python.
+
+## Library Availability:
+
+Assess the availability and quality of deep learning libraries and frameworks for each language (e.g., TensorFlow, PyTorch, and Keras for Python; Flux, Knet, and MLJ for Julia), examining their features, ease of use, and compatibility with other tools.
+
+### Python Deep Learning Libraries:
+
+- **TensorFlow**: Developed by Google Brain, TensorFlow is a widely-used open-source library for machine learning and deep learning applications. Features include flexible computation across CPUs, GPUs, and TPUs, a rich ecosystem of tools (e.g., TensorBoard, TensorFlow Lite), and support for various neural network architectures. TensorFlow's ease of use is enhanced by its high-level APIs, such as Keras, which simplifies the process of building and training neural networks.
+
+- **Keras**: Keras is a high-level neural network API that acts as a user-friendly interface for TensorFlow and other deep learning frameworks. Features include modularity, which allows users to build neural networks by combining predefined building blocks, and support for various layers, optimizers, and loss functions. Keras is designed to be easy to use and is well-suited for beginners in deep learning. 
+
+- **PyTorch**: Developed by Facebook AI Research (FAIR), PyTorch is another popular open-source library for deep learning. Features include dynamic computation graphs, native support for GPU acceleration, and a comprehensive ecosystem of tools and libraries (e.g., torchvision, torchtext). PyTorch is known for its user-friendly interface and similarity to Python's syntax, making it easy to learn and use.
+
+Sample code for a simple feedforward neural network using TensorFlow/Keras:
+
+```python
+import tensorflow as tf
+
+# Load the dataset
+mnist = tf.keras.datasets.mnist
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+x_train, x_test = x_train / 255.0, x_test / 255.0
+
+# Define the model
+model = tf.keras.models.Sequential([
+    tf.keras.layers.Flatten(input_shape=(28, 28)),
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Dense(10, activation='softmax')
+])
+
+# Compile the model
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+
+# Train the model
+model.fit(x_train, y_train, epochs=5)
+
+# Evaluate the model
+model.evaluate(x_test, y_test)
+```
+
+Sample code for a simple feedforward neural network using PyTorch:
+
+```python
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torchvision import datasets, transforms
+
+# Load the dataset
+transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
+train_loader = torch.utils.data.DataLoader(datasets.MNIST('./data', train=True, download=True, transform=transform), batch_size=64, shuffle=True)
+test_loader = torch.utils.data.DataLoader(datasets.MNIST('./data', train=False, transform=transform), batch_size=1000, shuffle=True)
+
+# Define the model
+class Net(nn.Module):
+    def __init__(self):
+        super(Net, self).__init__()
+        self.fc1 = nn.Linear(784, 128)
+        self.fc2 = nn.Linear(128, 10)
+
+    def forward(self, x):
+        x = x.view(-1, 784)
+        x = torch.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
+
+model = Net()
+
+# Compile the model
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+criterion = nn.CrossEntropyLoss()
+
+# Train the model
+for epoch in range(5):
+    for data, target in train_loader:
+        optimizer.zero_grad()
+        output = model(data)
+        loss = criterion(output, target)
+        loss.backward()
+        optimizer.step()
+
+# Evaluate the model
+correct = 0
+total = 0
+with torch.no_grad():
+    for data, target in test_loader:
+        output = model(data)
+        _, predicted = torch.max(output.data, 1)
+        total += target.size(0)
+        correct += (predicted == target).sum().item()
+
+accuracy = 100 * correct / total
+print(f'Test Accuracy: {accuracy}%')
+```
+This sample code creates a simple feedforward neural network with one hidden layer to classify the MNIST dataset. It uses the PyTorch library for defining, training, and evaluating the model.
+
+
+
+
