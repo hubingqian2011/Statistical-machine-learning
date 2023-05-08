@@ -43,7 +43,11 @@ end_time = time.time()
 # Print the time taken for matrix multiplication
 print("Time taken for matrix multiplication in Python: {:.6f} seconds".format(end_time - start_time))
 
+
 Time taken for matrix multiplication in Python: 0.076255 seconds
+
+
+
 ```julia
 using Random
 using LinearAlgebra
@@ -58,5 +62,7 @@ B = rand(size, size)
 
 # Measure the time taken for matrix multiplication
 @time C = A * B
+
+
 
 Time taken for matrix multiplication in Julia: 0.020130 seconds (2 allocations: 7.629 MiB)
