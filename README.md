@@ -165,5 +165,142 @@ print(f'Test Accuracy: {accuracy}%')
 This sample code creates a simple feedforward neural network with one hidden layer to classify the MNIST dataset. It uses the PyTorch library for defining, training, and evaluating the model.
 
 
+### Julia Deep Learning Libraries:
+
+- **Flux.jl**: 
+    - Features: Flux is a popular deep learning library for Julia that aims to provide a simple and intuitive interface for building and training neural networks. It supports various layers, optimizers, and activation functions, GPU acceleration, and is compatible with Julia's native parallelism and differentiation capabilities (Zygote.jl).
+    - Ease of use: Flux is easy to use due to its similarity to Julia's syntax and its straightforward approach to building neural networks.
+    - Compatibility: Flux is compatible with many Julia packages and can be easily integrated with other tools in the Julia ecosystem.
+
+### Sample code for a simple feedforward neural network using Flux:
+
+```julia
+using Flux, Flux.Data.MNIST
+using Flux: @epochs, onehotbatch, onecold, logitcrossentropy, throttle
+using Base.Iterators: repeated
+using CUDA
+
+# Load the dataset
+imgs = MNIST.images()
+labels = MNIST.labels()
+X = hcat(float.(reshape.(imgs, :))...) |> gpu
+Y = onehotbatch(labels, 0:9) |> gpu
+
+# Split into train and test sets
+(X_train, Y_train) = (X[:, 1:50_000], Y[:, 1:50_000])
+(X_test, Y_test) = (X[:, 50_001:end], Y[:, 50_001:end])
+
+# Define the model
+model = Chain(
+    Dense(784, 128, relu),
+    Dense(128, 10),
+    softmax
+) |> gpu
+
+# Compile the model
+loss(x, y) = logitcrossentropy(model(x), y)
+opt = ADAM()
+accuracy(x, y) = mean(onecold(model(x)) .== onecold(y))
+
+# Train the model
+dataset = repeated((X_train, Y_train), 200)
+@epochs 5 Flux.train!(loss, params(model), dataset, opt)
+
+# Evaluate the model
+test_accuracy = accuracy(X_test, Y_test)
+println("Test Accuracy: $(test_accuracy * 100)%")
+```
+This sample code creates a simple feedforward neural network with one hidden layer to classify the MNIST dataset. It uses the Flux.jl library for defining, training, and evaluating the model.
+
+- **Knet.jl**: 
+    - Features: Knet (pronounced "kay-net") is a deep learning library for Julia, focusing on providing flexibility and high performance. It supports custom GPU kernels, automatic differentiation, and various neural network layers and functions.
+    - Ease of use: Knet offers a more advanced and flexible interface compared to Flux, making it suitable for researchers and experienced practitioners who require more control over their deep learning models.
+    - Compatibility: Knet is compatible with other Julia packages and can be integrated with tools in the Julia ecosystem.
+
+### Sample code for a simple feedforward neural network using Knet.jl:
+
+```julia
+using Knet, Knet.Data.MNIST
+
+# Load the dataset
+x_train, y_train, x_test, y_test = mnist()
+
+# Define the model
+struct Net
+    w1
+    w2
+    b1
+    b2
+end
+
+function (m::Net)(x)
+    x = mat(x)
+    x = m.w1 * x .+ m.b1
+    x = relu.(x)
+    x = m.w2 * x .+ m.b2
+    return x
+end
+
+function init_weights(input_size, output_size)
+    w = 0.1 * randn(output_size, input_size)
+    b = zeros(output_size)
+    return KnetArray(w), KnetArray(b)
+end
+
+model = Net(init_weights(784, 128)..., init_weights(128, 10)...)
+
+# Compile the model
+loss(x, y) = nll(model(x), y)
+optimizer = adam(loss, params(model))
+
+# Train the model
+for epoch in 1:5
+    for (x, y) in minibatch(x_train, y_train, 64)
+        optimizer(x, y)
+    end
+end
+
+# Evaluate the model
+correct = 0
+total = 0
+for (x, y) in minibatch(x_test, y_test, 1000)
+    prediction = model(x)
+    _, indices = findmax(prediction, dims=1)
+    correct += sum(Array(y) .== indices)
+    total += length(y)
+end
+
+accuracy = correct / total
+println("Test Accuracy: $(accuracy * 100)%")
+```
+
+This sample code creates a simple feedforward neural network with one hidden layer to classify the MNIST dataset. It uses the Knet.jl library for defining, training, and evaluating the model.
+
+This sample code creates a simple feedforward neural network with one hidden layer to classify the MNIST dataset. It uses the MLJ.jl framework in conjunction with Flux to define, train, and evaluate the model.
+
+In summary, both Python and Julia have a range of deep learning libraries and frameworks with varying features, ease of use, and compatibility with other tools. While Python's deep learning ecosystem is currently more mature and has a larger community, Julia's libraries are quickly gaining traction and offer performance advantages due to the language's design.
+
+Community Support
+Evaluate the size and activity of the respective developer communities for Julia and Python, considering factors like online resources, forums, and package contributions.
+
+Python
+Python has a large and active developer community, which is one of the main reasons behind its popularity and widespread adoption. Some key aspects of Python's community support include:
+
+Online resources: There is an abundance of Python tutorials, courses, blog posts, and documentation available online, catering to various skill levels and addressing a wide range of topics, including deep learning.
+Forums: Python has a strong presence on forums such as Stack Overflow, Reddit, and the Google Groups mailing list, where users can ask questions, discuss topics, and share knowledge.
+Package contributions: Python's ecosystem benefits from a vast number of packages and libraries, with many developers contributing to open-source projects. The Python Package Index (PyPI) hosts thousands of packages, including popular deep learning libraries like TensorFlow, PyTorch, and Keras.
+Conferences and meetups: Python has numerous conferences (e.g., PyCon, SciPy, EuroPython) and local meetups worldwide, where developers can network, learn, and share ideas.
+Julia
+Julia, being a relatively newer programming language, has a smaller developer community compared to Python. However, it has been steadily growing and gaining traction, particularly in the areas of scientific computing and data science. Key aspects of Julia's community support include:
+
+Online resources: While not as abundant as Python's, there are a growing number of Julia tutorials, courses, blog posts, and documentation available online, covering various topics and skill levels.
+Forums: The Julia community is active on forums such as Discourse, Stack Overflow, and the Julia Lang Slack channel, where users can ask questions, discuss topics, and share knowledge.
+Package contributions: Julia's package ecosystem is growing, with many developers contributing to open-source projects. The Julia package registry, Julia Hub, hosts numerous packages, including deep learning libraries like Flux, Knet, and MLJ.
+
+
+
+
+
+
 
 
