@@ -4,17 +4,23 @@
 
 This project presents a comprehensive investigation into the multithreaded performance of two prominent programming languages in the realm of scientific computing, Julia and Python. Given the rising importance of concurrent and parallel computing in data-intensive fields, understanding the relative strengths and weaknesses of different languages in multi-threaded contexts is crucial.
 
-Firstly, we examined the theoretical underpinnings of multithreading in both languages. Julia, with its native support for parallel and distributed computing, and Python, where multithreading is typically achieved through the threading module or multiprocessing for CPU-bound tasks. We also explored Python's Global Interpreter Lock (GIL) and its impact on Python's multithreading capabilities.
+Initially, we examined the theoretical underpinnings of multithreading in both languages and implemented simple examples to demonstrate multithreading capabilities in Python and Julia.
 
-The crux of our analysis was a series of benchmark tests designed to push the multithreading capabilities of each language. These tasks were designed to mirror real-world data processing, from basic tasks such as sorting and matrix operations, through to more complex operations typical of data science workflows. 
+**Python** - Python provides several methods for multithreading, including the `concurrent.futures` module. Below is a simple example where we create a thread for each task (in this case, sleeping for a number of seconds and then printing a message):
 
-In order to maintain a fair comparison, we ensured that Python's benchmarks used optimal libraries like NumPy for numerical computations and joblib for efficient parallelism, whereas Julia's benchmarks were run in its native environment.
+```python
+import concurrent.futures
+import time
 
-Results suggested that while both languages have significant strengths, Julia demonstrated superior performance in multithreaded contexts due to its design for high-performance numerical and scientific computing. We found that Julia's performance advantage was particularly pronounced for CPU-intensive tasks, a finding that aligns with its intent to combine the ease of use of high-level languages like Python with the speed of compiled languages.
+def pause_and_print(n):
+    time.sleep(n)
+    print(f"Finished sleeping for {n} second(s).")
 
-Nevertheless, Python remains an exceptionally flexible language with a vast ecosystem of libraries and frameworks, suggesting it remains a viable option, particularly when the tasks are IO-bound or can leverage existing Python-native libraries effectively.
+with concurrent.futures.ThreadPoolExecutor() as executor:
+    seconds = [5, 4, 3, 2, 1]  # Different times to sleep
+    for second in seconds:
+        executor.submit(pause_and_print, second)```
 
-This project provides valuable insights for software engineers, data scientists, and researchers who need to make informed decisions about language choice in data-intensive, concurrent processing contexts. Future work will extend this comparison to more languages and computational scenarios.
 
 
 
