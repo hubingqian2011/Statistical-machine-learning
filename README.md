@@ -9,17 +9,21 @@ Initially, we examined the theoretical underpinnings of multithreading in both l
 **Python** - Python provides several methods for multithreading, including the `concurrent.futures` module. Below is a simple example where we create a thread for each task (in this case, sleeping for a number of seconds and then printing a message):
 
 ```python
-import concurrent.futures
+import threading
 import time
 
+# A simple function that takes a pause and then prints a message
 def pause_and_print(n):
     time.sleep(n)
     print(f"Finished sleeping for {n} second(s).")
 
-with concurrent.futures.ThreadPoolExecutor() as executor:
-    seconds = [5, 4, 3, 2, 1]  # Different times to sleep
-    for second in seconds:
-        executor.submit(pause_and_print, second)
+# Different times to sleep
+seconds = [5, 4, 3, 2, 1] 
+
+# Create and start a new thread for each time to sleep
+for second in seconds:
+    t = threading.Thread(target=pause_and_print, args=(second,))
+    t.start()
 ```
 **Julia** - Julia natively supports parallel and distributed computing. We used the Threads.@spawn macro to create a similar multithreaded program in Julia:
 
