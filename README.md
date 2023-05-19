@@ -57,9 +57,122 @@ As we delve further into Julia's multithreading capabilities, we find several ke
 
 However, it is essential to note that while Julia's multithreading capabilities are powerful, the language is younger than Python and doesn't have as expansive a community or library support. Moreover, while Julia simplifies writing multithreaded code, effective multithreading that avoids issues like race conditions and deadlocks still necessitates careful programming and a sound understanding of concurrency.
 
+Here, we will design two simple benchmark tests, one for sorting a large array and the other for matrix multiplication, both tasks being typical in data processing and scientific computing. We will present codes for both Python and Julia.
+
+```Python
+import numpy as np
+import time
+from concurrent.futures import ThreadPoolExecutor
+
+# Sorting Benchmark
+def sort_benchmark():
+    np.random.seed(0)
+    large_array = np.random.rand(10**7)  # Creating a large array
+    start_time = time.time()
+    sorted_array = np.sort(large_array)
+    end_time = time.time()
+    print(f"Sorting benchmark time: {end_time - start_time} seconds")
+
+# Matrix Multiplication Benchmark
+def matrix_mul_benchmark():
+    np.random.seed(0)
+    A = np.random.rand(1000, 1000)
+    B = np.random.rand(1000, 1000)
+    start_time = time.time()
+    result = A @ B
+    end_time = time.time()
+    print(f"Matrix multiplication benchmark time: {end_time - start_time} seconds")
+
+# Running the benchmarks
+sort_benchmark()
+matrix_mul_benchmark()
+```
 
 
+```Julia
+using Random, LinearAlgebra, BenchmarkTools
 
+# Sorting Benchmark
+function sort_benchmark()
+    Random.seed!(0)
+    large_array = rand(10^7)
+    result = @belapsed sort(large_array)
+    println("Sorting benchmark time: ", result, " seconds")
+end
+
+# Matrix Multiplication Benchmark
+function matrix_mul_benchmark()
+    Random.seed!(0)
+    A = rand(1000, 1000)
+    B = rand(1000, 1000)
+    result = @belapsed A * B
+    println("Matrix multiplication benchmark time: ", result, " seconds")
+end
+
+# Running the benchmarks
+sort_benchmark()
+matrix_mul_benchmark()
+```
+The Python code uses numpy for the sorting and matrix multiplication operations, while the Julia code uses built-in functions for these operations. The @belapsed macro from Julia's BenchmarkTools package is used to measure the time taken by the operations. 
+
+## Multithreaded Matrix Multiplication in Julia
+This example demonstrates Julia's superior performance in multithreaded, CPU-intensive tasks.
+
+```julia
+using LinearAlgebra, BenchmarkTools, Base.Threads
+
+function matrix_mul_benchmark()
+    A = [rand(500, 500) for _ in 1:nthreads()]
+    B = [rand(500, 500) for _ in 1:nthreads()]
+    C = Array{Matrix{Float64}}(undef, nthreads())
+
+    # Benchmark parallel matrix multiplication
+    result = @belapsed begin
+        @threads for i in 1:nthreads()
+            C[i] = A[i] * B[i]
+        end
+    end
+    println("Parallel matrix multiplication benchmark time: ", result, " seconds")
+end
+
+matrix_mul_benchmark()
+```
+In this code, we perform multiple matrix multiplications in parallel by creating an array of random matrices for each available thread.
+
+## IO-bound Task in Python
+This example shows Python's efficiency in handling IO-bound tasks, by downloading multiple files from the internet in parallel.
+
+```Python
+import requests
+import time
+import concurrent.futures
+
+# List of URLs to download
+urls = [
+    "http://example.com/big_file_1",
+    "http://example.com/big_file_2",
+    # Add more URLs here...
+]
+
+def download_file(url):
+    response = requests.get(url)
+    filename = url.split("/")[-1]
+    with open(filename, 'wb') as f:
+        f.write(response.content)
+    return filename
+
+start_time = time.time()
+
+with concurrent.futures.ThreadPoolExecutor() as executor:
+    futures = {executor.submit(download_file, url) for url in urls}
+
+for future in concurrent.futures.as_completed(futures):
+    print(f"Downloaded {future.result()}")
+
+end_time = time.time()
+print(f"Download benchmark time: {end_time - start_time} seconds")
+```
+In this script, we use concurrent.futures to download files from a list of URLs in parallel. Despite Python's Global Interpreter Lock (GIL), Python's threading capabilities provide significant benefits for IO-bound tasks like this one.
 
 
 
